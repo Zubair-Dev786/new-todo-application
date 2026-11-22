@@ -18,7 +18,7 @@ function Signup() {
                 <form className="auth-form">
                     <div className="form-group">
                         <label>Full name</label>
-                        <input type="text" placeholder="John Doe" />
+                        <input type="text" placeholder="Enter a name" />
                     </div>
 
                     <div className="form-group">
