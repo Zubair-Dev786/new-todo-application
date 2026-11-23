@@ -12,6 +12,8 @@ function Signup() {
         password: "",
     });
 
+    const [loader, setLoader] = useState(false);
+
     const formValidation = (event) => {
 
         event.preventDefault();
@@ -73,6 +75,9 @@ function Signup() {
 
 
         try {
+
+            setLoader(true);
+
             const { error } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
@@ -91,7 +96,7 @@ function Signup() {
                     text: 'Your data has been saved successfully.',
                     confirmButtonText: 'Great!',
                     confirmButtonColor: '#28a745',
-                    timer: 3000,
+                    timer: 2000,
                     timerProgressBar: true,
                     showClass: {
                         popup: 'animate__animated animate__fadeInDown'
@@ -107,6 +112,8 @@ function Signup() {
                 text: error.message
             });
         }
+
+        setLoader(false);
     }
 
     return (
@@ -151,7 +158,7 @@ function Signup() {
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                     </div>
 
-                    <button type="submit" className="primary-btn">Create account</button>
+                    <button type="submit" className="primary-btn">{loader ? "Signinig in...." : "Create account"}</button>
                 </form>
 
                 <p className="auth-footer">

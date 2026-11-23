@@ -10,6 +10,7 @@ function Login() {
         email: "",
         password: "",
     });
+    const [loader, setLoader] = useState(false);
 
     const formValidation = (event) => {
 
@@ -62,6 +63,9 @@ function Login() {
         }
 
         try {
+
+            setLoader(true);
+
             const { error } = await supabase.auth.signInWithPassword({
                 email: formData.email,
                 password: formData.password,
@@ -80,7 +84,7 @@ function Login() {
                     text: 'Login successfully',
                     confirmButtonText: 'Great!',
                     confirmButtonColor: '#28a745',
-                    timer: 3000,
+                    timer: 2000,
                     timerProgressBar: true,
                     showClass: {
                         popup: 'animate__animated animate__fadeInDown'
@@ -95,7 +99,9 @@ function Login() {
                 title: "Oops...",
                 text: error.message
             });
+
         }
+        setLoader(false);
     }
 
     return (
@@ -131,7 +137,7 @@ function Login() {
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                     </div>
 
-                    <button className="primary-btn">Sign in</button>
+                    <button className="primary-btn">{loader ? "Signin...." : "Sign in"}</button>
                 </form>
 
                 <p className="auth-footer">
