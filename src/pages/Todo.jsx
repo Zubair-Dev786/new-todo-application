@@ -1,10 +1,55 @@
 import { useState } from "react";
+import Swal from 'sweetalert2'
+import { Link } from "react-router-dom";
+import { supabase } from "../supabase";
+
 
 function Todo() {
 
   const [task, setTask] = useState("");
 
-  const 
+  const addTask = async () => {
+    if (task.trim() === "") {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Please enter a task."
+      });
+      return
+    };
+
+    const { data } = await supabase.auth.getUser();
+    const user_id = data.user.id;
+
+    try {
+      const { error } = await supabase
+        .from("user_todos")
+        .insert({ user_id: user_id, text: task });
+
+      if (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: error.message
+        });
+      } else {
+        Swal.fire({
+          icon: "success",
+          title: "Added!",
+          text: "Task added successfully",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        setTask("");
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: error.message
+      });
+    }
+  }
   return (
     <div className="todo-page">
       <main className="todo-container">
@@ -26,8 +71,10 @@ function Todo() {
           <input
             type="text"
             placeholder="What needs to be done?"
+            value={task}
+            onChange={(e) => setTask(e.target.value)}
           />
-          <button className="add-btn">+ Add task</button>
+          <button className="add-btn" onClick={addTask}>+ Add task</button>
         </div>
 
         <div className="task-toolbar">
