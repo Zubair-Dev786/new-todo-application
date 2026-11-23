@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Swal from 'sweetalert2'
 import { Link } from "react-router-dom";
 import { supabase } from "../supabase";
@@ -7,6 +7,8 @@ import { supabase } from "../supabase";
 function Todo() {
 
   const [task, setTask] = useState("");
+  const [list, setList] = useState([]);
+
 
   const addTask = async () => {
     if (task.trim() === "") {
@@ -41,6 +43,7 @@ function Todo() {
           showConfirmButton: false,
         });
         setTask("");
+        getData();
       }
     } catch (error) {
       Swal.fire({
@@ -50,6 +53,41 @@ function Todo() {
       });
     }
   }
+
+  const getData = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    const user_id = userData?.user?.id;
+
+    try {
+      const { data, error } = await supabase
+        .from("user_todos")
+        .select("*")
+        .eq("user_id", user_id);
+
+      if (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: error.message
+        });
+      } else {
+        setList(data);
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: error.message
+      });
+    }
+  }
+
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+
   return (
     <div className="todo-page">
       <main className="todo-container">
@@ -78,7 +116,7 @@ function Todo() {
         </div>
 
         <div className="task-toolbar">
-          <h2>Tasks <span>04</span></h2>
+          <h2>Tasks <span>{list.length}</span></h2>
 
           <input
             className="search-input"
