@@ -24,7 +24,7 @@ function Signup() {
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
-                text: "Please Enter a Name!"
+                text: "Please enter your full name."
             });
             return false;
         };
@@ -33,14 +33,14 @@ function Signup() {
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
-                text: "Please Enter a Email!"
+                text: "Please enter your email address."
             });
             return false;
         } else if (!emailRegex.test(formData.email)) {
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
-                text: "Please Enter a Valid Email!"
+                text: "Please enter a valid email address."
             });
             return false;
         };
@@ -49,7 +49,7 @@ function Signup() {
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
-                text: "Please Enter a Password!"
+                text: "Please enter a password."
             });
             return false;
         } else if (formData.password.length < 6) {
@@ -78,7 +78,7 @@ function Signup() {
 
             setLoader(true);
 
-            const { error } = await supabase.auth.signUp({
+            const { data, error } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
             });
@@ -89,11 +89,17 @@ function Signup() {
                     title: "Oops...",
                     text: error.message
                 });
-            } else {
+            } else if (data.user && data.user.identities.length === 0) {
                 Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: "This email is already registered. Please sign in instead."
+                });
+            } else {
+                await Swal.fire({
                     icon: 'success',
                     title: 'Success!',
-                    text: 'Your data has been saved successfully.',
+                    text: 'Account created successfully!',
                     confirmButtonText: 'Great!',
                     confirmButtonColor: '#28a745',
                     timer: 2000,
@@ -111,9 +117,9 @@ function Signup() {
                 title: "Oops...",
                 text: error.message
             });
-        }
-
-        setLoader(false);
+        } finally {
+            setLoader(false);
+        };
     }
 
     return (
@@ -158,7 +164,13 @@ function Signup() {
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                     </div>
 
-                    <button type="submit" className="primary-btn">{loader ? "Signinig in...." : "Create account"}</button>
+                    <button
+                        type="submit"
+                        className="primary-btn"
+                        disabled={loader}
+                    >
+                        {loader ? "Creating account..." : "Create account"}
+                    </button>
                 </form>
 
                 <p className="auth-footer">

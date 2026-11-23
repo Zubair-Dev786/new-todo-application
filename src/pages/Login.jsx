@@ -23,14 +23,14 @@ function Login() {
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
-                text: "Please Enter a Email!"
+                text: "Please enter your email address."
             });
             return false;
         } else if (!emailRegex.test(formData.email)) {
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
-                text: "Please Enter a Valid Email!"
+                text: "Please enter a valid email address."
             });
             return false;
         };
@@ -39,7 +39,7 @@ function Login() {
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
-                text: "Please Enter a Password!"
+                text: "	Please enter your password."
             });
             return false;
         } else if (formData.password.length < 6) {
@@ -78,10 +78,10 @@ function Login() {
                     text: error.message
                 });
             } else {
-                Swal.fire({
+                await Swal.fire({
                     icon: 'success',
                     title: 'Success!',
-                    text: 'Login successfully',
+                    text: 'You have successfully signed in.',
                     confirmButtonText: 'Great!',
                     confirmButtonColor: '#28a745',
                     timer: 2000,
@@ -100,8 +100,9 @@ function Login() {
                 text: error.message
             });
 
-        }
-        setLoader(false);
+        } finally {
+            setLoader(false);
+        };
     }
 
     return (
@@ -137,7 +138,7 @@ function Login() {
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                     </div>
 
-                    <button className="primary-btn">{loader ? "Signin...." : "Sign in"}</button>
+                    <button className="primary-btn">{loader ? "Signing in..." : "Sign in"}</button>
                 </form>
 
                 <p className="auth-footer">
