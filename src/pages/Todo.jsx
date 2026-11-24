@@ -127,12 +127,12 @@ function Todo() {
 
         <div className="task-list">
 
-          <div className="task-card">
+          {list.map((item) => {
+            <div className="task-card" key={item.id}>
             <div className="task-checkbox"></div>
 
             <div className="task-content">
-              <h3>Complete React practice</h3>
-              <p>Practice components and props</p>
+              <h3>{item.task}</h3>
               <span className="task-date">Task pending</span>
             </div>
 
@@ -141,13 +141,14 @@ function Todo() {
               <button title="Delete">×</button>
             </div>
           </div>
+          })}
 
           <div className="task-card">
             <div className="task-checkbox"></div>
 
             <div className="task-content">
               <h3>Build Todo App UI</h3>
-              <p>Create a clean and responsive interface</p>
+              {/* <p>Create a clean and responsive interface</p> */}
               <span className="task-date">Task pending</span>
             </div>
 
