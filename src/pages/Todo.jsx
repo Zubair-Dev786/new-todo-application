@@ -1,4 +1,4 @@
-
+import { jsPDF } from "jspdf";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +7,8 @@ import { supabase } from "../supabase";
 function Todo() {
   const [task, setTask] = useState("");
   const [list, setList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [buttonLoader, setButtonLoader] = useState(false);
 
   const navigate = useNavigate();
 
@@ -25,38 +26,26 @@ function Todo() {
       setList(data);
     } catch (error) {
       Swal.fire("Oops...", error.message, "error");
-    } finally {
-      setLoading(false);
     }
   };
 
   // Authentication check
   useEffect(() => {
     const checkUser = async () => {
-      try {
-        const { data, error } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getSession();
 
-        console.log("Logged-in user:", data?.user);
-        console.log("Authentication error:", error);
-
-        if (error || !data.user) {
-          navigate("/login", { replace: true });
-          setLoading(false);
-          return;
-        }
-
-        await getData(data.user.id);
-      } catch (error) {
-        console.log(error);
+      if (error || !data.session) {
         navigate("/login", { replace: true });
-        setLoading(false);
+        return;
       }
+
+      getData(data.session.user.id);
     };
 
     checkUser();
   }, [navigate]);
 
-  // Add task
+  // Add or Update task
   const addTask = async () => {
     if (task.trim() === "") {
       Swal.fire("Oops...", "Please enter a task.", "error");
@@ -64,83 +53,71 @@ function Todo() {
     }
 
     try {
-      const { data, error: userError } = await supabase.auth.getUser();
+      const { data, error: userError } = await supabase.auth.getSession();
 
-      if (userError || !data.user) {
+      if (userError || !data.session) {
         navigate("/login", { replace: true });
         return;
       }
 
-      const { error } = await supabase
-        .from("user_todos")
-        .insert({
-          user_id: data.user.id,
-          text: task.trim()
+      const user_id = data.session.user.id;
+
+      setButtonLoader(true);
+
+      if (editingId === null) {
+        setButtonLoader(true);
+        const { error } = await supabase
+          .from("user_todos")
+          .insert({
+            user_id: user_id,
+            text: task.trim()
+          });
+
+        if (error) throw error;
+
+        Swal.fire({
+          icon: "success",
+          title: "Task Added!",
+          text: "Your task has been added successfully.",
+          timer: 1500,
+          showConfirmButton: false
         });
 
-      if (error) throw error;
+      } else {
+        // Update task
+        const { error } = await supabase
+          .from("user_todos")
+          .update({ text: task.trim() })
+          .eq("id", editingId)
+          .eq("user_id", user_id);
+
+        if (error) throw error;
+
+        Swal.fire({
+          icon: "success",
+          title: "Changes Saved!",
+          text: "Your task has been updated successfully.",
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
 
       setTask("");
-      await getData(data.user.id);
+      setButtonLoader(false);
+      setEditingId(null);
 
-      Swal.fire({
-        icon: "success",
-        title: "Added!",
-        text: "Task added successfully.",
-        timer: 1500,
-        showConfirmButton: false
-      });
+      getData(user_id);
+
     } catch (error) {
+      setButtonLoader(true);
       Swal.fire("Oops...", error.message, "error");
     }
   };
 
   // Edit task
-  const editTask = async (item) => {
-    const result = await Swal.fire({
-      title: "Edit Task",
-      input: "text",
-      inputValue: item.text,
-      inputPlaceholder: "Enter your task",
-      showCancelButton: true,
-      confirmButtonText: "Save",
-      inputValidator: (value) => {
-        if (!value.trim()) {
-          return "Task cannot be empty!";
-        }
-      }
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      const { data, error: userError } = await supabase.auth.getUser();
-
-      if (userError || !data.user) {
-        navigate("/login", { replace: true });
-        return;
-      }
-
-      const { error } = await supabase
-        .from("user_todos")
-        .update({ text: result.value.trim() })
-        .eq("id", item.id)
-        .eq("user_id", data.user.id);
-
-      if (error) throw error;
-
-      await getData(data.user.id);
-
-      Swal.fire({
-        icon: "success",
-        title: "Updated!",
-        text: "Task updated successfully.",
-        timer: 1500,
-        showConfirmButton: false
-      });
-    } catch (error) {
-      Swal.fire("Oops...", error.message, "error");
-    }
+  const editTask = (item) => {
+    setTask(item.text);
+    setEditingId(item.id);
   };
 
   // Delete task
@@ -157,9 +134,9 @@ function Todo() {
     if (!result.isConfirmed) return;
 
     try {
-      const { data, error: userError } = await supabase.auth.getUser();
+      const { data, error: userError } = await supabase.auth.getSession();
 
-      if (userError || !data.user) {
+      if (userError || !data.session) {
         navigate("/login", { replace: true });
         return;
       }
@@ -168,11 +145,11 @@ function Todo() {
         .from("user_todos")
         .delete()
         .eq("id", item.id)
-        .eq("user_id", data.user.id);
+        .eq("user_id", data.session.user.id);
 
       if (error) throw error;
 
-      await getData(data.user.id);
+      getData(data.session.user.id);
 
       Swal.fire({
         icon: "success",
@@ -181,9 +158,89 @@ function Todo() {
         timer: 1500,
         showConfirmButton: false
       });
+
     } catch (error) {
       Swal.fire("Oops...", error.message, "error");
     }
+  };
+
+
+  // Delete All Tasks
+  const deleteAllTasks = async () => {
+    if (list.length === 0) {
+      Swal.fire("No Tasks", "There are no tasks to delete.", "info");
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "Delete All Tasks?",
+      text: "All your tasks will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete all",
+      cancelButtonText: "Cancel"
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const { data, error: userError } = await supabase.auth.getSession();
+
+      if (userError || !data.session) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      const { error } = await supabase
+        .from("user_todos")
+        .delete()
+        .eq("user_id", data.session.user.id);
+
+      if (error) throw error;
+
+      setList([]);
+      setTask("");
+      setEditingId(null);
+
+      Swal.fire("Deleted!", "All tasks have been deleted.", "success");
+
+    } catch (error) {
+      Swal.fire("Oops...", error.message, "error");
+    }
+  };
+
+  const downloadPDF = () => {
+
+    if (list.length === 0) {
+      Swal.fire("No Tasks", "There are no tasks to download.", "info");
+      return;
+    }
+
+    // Create PDF
+    const doc = new jsPDF();
+
+    // PDF Heading
+    doc.setFontSize(20);
+    doc.text("Taskly - My Tasks", 20, 20);
+
+    // Task list
+    doc.setFontSize(12);
+
+    let y = 40;
+
+    list.forEach((item, index) => {
+      const taskText = doc.splitTextToSize(
+        `${index + 1}. ${item.text}`,
+        170
+      );
+
+      doc.text(taskText, 20, y);
+      y = y + 10;
+    });
+
+    // Download PDF
+    doc.save("My-Tasks.pdf");
+
   };
 
   return (
@@ -212,9 +269,24 @@ function Todo() {
             }}
           />
 
-          <button className="add-btn" onClick={addTask}>
-            + Add task
+          <button className="add-btn" onClick={addTask} disabled={buttonLoader}>
+            {buttonLoader
+              ? "Adding..."
+              : editingId === null
+                ? "+ Add Task"
+                : "Save Changes"}
           </button>
+
+          {editingId !== null && (
+            <button
+              onClick={() => {
+                setTask("");
+                setEditingId(null);
+              }}
+            >
+              Cancel
+            </button>
+          )}
         </div>
 
         <div className="task-toolbar">
@@ -224,9 +296,7 @@ function Todo() {
         </div>
 
         <div className="task-list">
-          {loading ? (
-            <p className="empty-message">Loading tasks...</p>
-          ) : list.length === 0 ? (
+          {list.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">✦</div>
               <h3>No tasks yet</h3>
@@ -260,6 +330,16 @@ function Todo() {
               </div>
             ))
           )}
+        </div>
+
+        <div className="task-buttons">
+          <button onClick={downloadPDF}>
+            Download PDF
+          </button>
+
+          <button onClick={deleteAllTasks}>
+            Delete All
+          </button>
         </div>
 
         <div className="todo-bottom">
