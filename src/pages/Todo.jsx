@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -12,7 +13,6 @@ function Todo() {
 
   const navigate = useNavigate();
 
-  // Fetch tasks
   const getData = async (user_id) => {
     try {
       const { data, error } = await supabase
@@ -29,7 +29,6 @@ function Todo() {
     }
   };
 
-  // Authentication check
   useEffect(() => {
     const checkUser = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -45,7 +44,6 @@ function Todo() {
     checkUser();
   }, [navigate]);
 
-  // Add or Update task
   const addTask = async () => {
     if (task.trim() === "") {
       Swal.fire("Oops...", "Please enter a task.", "error");
@@ -65,7 +63,6 @@ function Todo() {
       setButtonLoader(true);
 
       if (editingId === null) {
-        setButtonLoader(true);
         const { error } = await supabase
           .from("user_todos")
           .insert({
@@ -84,7 +81,6 @@ function Todo() {
         });
 
       } else {
-        // Update task
         const { error } = await supabase
           .from("user_todos")
           .update({ text: task.trim() })
@@ -103,24 +99,23 @@ function Todo() {
       }
 
       setTask("");
-      setButtonLoader(false);
       setEditingId(null);
 
-      getData(user_id);
+      await getData(user_id);
+
+      setButtonLoader(false);
 
     } catch (error) {
-      setButtonLoader(true);
+      setButtonLoader(false);
       Swal.fire("Oops...", error.message, "error");
     }
   };
 
-  // Edit task
   const editTask = (item) => {
     setTask(item.text);
     setEditingId(item.id);
   };
 
-  // Delete task
   const deleteTask = async (item) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -149,7 +144,7 @@ function Todo() {
 
       if (error) throw error;
 
-      getData(data.session.user.id);
+      await getData(data.session.user.id);
 
       Swal.fire({
         icon: "success",
@@ -164,8 +159,6 @@ function Todo() {
     }
   };
 
-
-  // Delete All Tasks
   const deleteAllTasks = async () => {
     if (list.length === 0) {
       Swal.fire("No Tasks", "There are no tasks to delete.", "info");
@@ -210,20 +203,16 @@ function Todo() {
   };
 
   const downloadPDF = () => {
-
     if (list.length === 0) {
       Swal.fire("No Tasks", "There are no tasks to download.", "info");
       return;
     }
 
-    // Create PDF
     const doc = new jsPDF();
 
-    // PDF Heading
     doc.setFontSize(20);
     doc.text("Taskly - My Tasks", 20, 20);
 
-    // Task list
     doc.setFontSize(12);
 
     let y = 40;
@@ -234,13 +223,17 @@ function Todo() {
         170
       );
 
+      if (y + taskText.length * 7 > 280) {
+        doc.addPage();
+        y = 20;
+      }
+
       doc.text(taskText, 20, y);
-      y = y + 10;
+
+      y = y + taskText.length * 7 + 5;
     });
 
-    // Download PDF
     doc.save("My-Tasks.pdf");
-
   };
 
   return (
@@ -269,9 +262,13 @@ function Todo() {
             }}
           />
 
-          <button className="add-btn" onClick={addTask} disabled={buttonLoader}>
+          <button
+            className="add-btn"
+            onClick={addTask}
+            disabled={buttonLoader}
+          >
             {buttonLoader
-              ? "Adding..."
+              ? "Saving..."
               : editingId === null
                 ? "+ Add Task"
                 : "Save Changes"}
@@ -279,6 +276,7 @@ function Todo() {
 
           {editingId !== null && (
             <button
+              className="cancel-btn"
               onClick={() => {
                 setTask("");
                 setEditingId(null);
@@ -333,11 +331,19 @@ function Todo() {
         </div>
 
         <div className="task-buttons">
-          <button onClick={downloadPDF}>
-            Download PDF
+          <button
+            className="pdf-btn"
+            onClick={downloadPDF}
+            disabled={list.length === 0}
+          >
+            <span>↓</span> Download PDF
           </button>
 
-          <button onClick={deleteAllTasks}>
+          <button
+            className="delete-all-btn"
+            onClick={deleteAllTasks}
+            disabled={list.length === 0}
+          >
             Delete All
           </button>
         </div>
