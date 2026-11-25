@@ -158,41 +158,250 @@ button {
 
 .todo-page {
     min-height: 100vh;
-    padding: 55px 24px;
-    background: #f7f8fc;
+    background: #f4f6fb;
+    padding: 55px 20px;
+    font-family: Arial, sans-serif;
+    color: #20243a;
 }
 
 .todo-container {
-    max-width: 850px;
-    margin: 0 auto;
+    max-width: 720px;
+    margin: auto;
+    background: #ffffff;
+    padding: 35px;
+    border-radius: 22px;
+    box-shadow: 0 12px 45px rgba(30, 40, 80, 0.07);
+}
+
+.todo-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 21px;
+    font-weight: 700;
+    color: #5546d8;
+    margin-bottom: 45px;
+}
+
+.brand-icon {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    background: #5546d8;
+    color: white;
+    border-radius: 12px;
 }
 
 .todo-heading {
-    margin-top: 58px;
-    margin-bottom: 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    margin-bottom: 28px;
 }
 
 .eyebrow {
-    color: #635bff;
+    color: #8175dc;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
 }
 
 .todo-heading h1 {
     font-size: 34px;
-    letter-spacing: -1px;
-    margin-top: 10px;
+    margin: 10px 0;
 }
 
 .todo-heading p {
-    color: #898d9d;
-    font-size: 14px;
-    margin-top: 8px;
+    color: #85899b;
+    margin: 0;
 }
+
+.task-input-card {
+    display: flex;
+    gap: 12px;
+    padding: 10px;
+    background: #f7f7fc;
+    border: 1px solid #e9e8f4;
+    border-radius: 14px;
+    margin-bottom: 35px;
+}
+
+.task-input-card input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 12px;
+    font-size: 14px;
+}
+
+.add-btn {
+    background: #5546d8;
+    color: white;
+    border: none;
+    padding: 13px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.add-btn:hover {
+    background: #4032b9;
+}
+
+.task-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 17px;
+}
+
+.task-toolbar h2 {
+    font-size: 19px;
+}
+
+.task-toolbar h2 span {
+    background: #eeecff;
+    color: #5546d8;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    margin-left: 5px;
+}
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.task-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 19px;
+    border: 1px solid #ededf4;
+    border-radius: 13px;
+    transition: 0.2s;
+}
+
+.task-card:hover {
+    border-color: #c9c3ff;
+    background: #fcfbff;
+    transform: translateY(-2px);
+}
+
+.task-content {
+    min-width: 0;
+}
+
+.task-content h3 {
+    font-size: 15px;
+    margin: 0 0 8px;
+    overflow-wrap: anywhere;
+}
+
+.task-date {
+    font-size: 12px;
+    color: #999bad;
+}
+
+.task-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.task-actions button {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 9px;
+    font-size: 19px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.edit-btn {
+    background: #eeecff;
+    color: #5546d8;
+}
+
+.edit-btn:hover {
+    background: #dcd8ff;
+}
+
+.delete-btn {
+    background: #fff0f0;
+    color: #e34d5b;
+}
+
+.delete-btn:hover {
+    background: #ffdddd;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 45px 15px;
+    background: #fafaff;
+    border: 1px dashed #dcd9f2;
+    border-radius: 15px;
+}
+
+.empty-icon {
+    font-size: 32px;
+    color: #8175dc;
+}
+
+.empty-state h3 {
+    margin: 12px 0 7px;
+}
+
+.empty-state p,
+.empty-message {
+    color: #9295a6;
+    font-size: 14px;
+}
+
+.empty-message {
+    text-align: center;
+    padding: 25px;
+}
+
+.todo-bottom {
+    text-align: center;
+    color: #a0a2b0;
+    font-size: 12px;
+    margin-top: 35px;
+}
+
+@media (max-width: 550px) {
+    .todo-page {
+        padding: 20px 12px;
+    }
+
+    .todo-container {
+        padding: 22px 16px;
+    }
+
+    .todo-heading h1 {
+        font-size: 28px;
+    }
+
+    .task-input-card {
+        flex-direction: column;
+    }
+
+    .add-btn {
+        width: 100%;
+    }
+
+    .task-card {
+        padding: 14px;
+    }
+}
+
 
 /* ADD TASK */
 
